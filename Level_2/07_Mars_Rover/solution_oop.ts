@@ -170,7 +170,6 @@ function findShortestPath(plateauSize: string, startPos: string, rockPos: string
 }
 
 // --- Test Suite ---
-
 function assert(actual: any, expected: any, message: string): void {
     const pass = JSON.stringify(actual) === JSON.stringify(expected);
     console.log(`${pass ? "✅" : "❌"} ${message}`);

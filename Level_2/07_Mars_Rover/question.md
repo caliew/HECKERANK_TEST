@@ -10,37 +10,82 @@ Your task is to allow NASA to control the rover using a simple string of command
 
 ### Requirements
 
-- The size of the plateau is specified as **x,y** grid spaces, e.g., **7,5**. This means the valid x-coordinates are 0 to 6, and y-coordinates are 0 to 4.
-- The initial position of the rover is specified with a zero-indexed coordinate from the **bottom left corner** of the grid and a direction, e.g., **0,0,N**.
-- The commands **L** and **R** make the rover spin 90 degrees left or right respectively, without moving from its current spot.
-- The command **M** means move forward one grid point, and maintain the same heading.
-- If a move would take the rover off the edge of the plateau, it should be ignored.
+- The size of the plateau is specified as **x,y** grid spaces, e.g. **7,5**
+- The initial position of the rover is specified with a zero-indexed coordinate from the **bottom left corner** of the grid and a direction, e.g. **0,0,N**
+- The movement commands are specified as a simple string, e.g. **LMMRMLM**
+- The commands **L** and **R** make the rover spin 90 degrees left or right respectively, without moving from its current spot
+- The command **M** means move forward one grid point, and maintain the same heading
+- The output should be the final position of the rover, e.g. **0,1,W**
+- If a move would take the rover off the edge of the plateau, it should be ignored
+
+### Examples
+
+#### 1. Free movement
+**Input**
+Plateau size: 3,3
+Initial position: 0,0,E
+Movement: MMLMM
+
+**Output**
+2,2,N
+
+#### 2. Hitting the edge
+**Input**
+Plateau size: 3,3
+Initial position: 0,0,E
+Movement: MMMLMMM
+
+**Output**
+2,2,N
 
 ---
 
 ## Part 2: The Other Rover
 
-Now NASA is sending the Perseverance rover as well. Each rover has its own starting position and commands. They move sequentially (the first finishes its entire sequence before the second one starts).
+NASA is now sending the Perseverance rover to investigate this plateau as well. They are being controlled by different operators, so we need to make sure they don't crash into each other.
 
 ### Requirements
-- If a move would make a rover crash into the other one (occupy the same grid space), it should be ignored.
+- The app takes two initial positions and two command strings (one for each rover).
+- Each rover completes its **entire** movement sequence before the next one starts.
+- If a move would make a rover crash into the other one, it should be ignored.
 - Neither rover should fall off the edge of the plateau.
+
+### Examples
+
+#### 1. Free movement
+**Input**
+Plateau size: 3,3
+Initial position: "0,0,E","2,2,W"
+Movement: "MMLM","MMLMM"
+
+**Output**
+"2,1,N","0,0,S"
+
+#### 2. Avoiding a crash
+**Input**
+Plateau size: 3,3
+Initial position: "0,0,N","2,2,W"
+Movement: "MM","MMLMM"
+
+**Output**
+"0,2,N","1,0,S"
 
 ---
 
 ## Bonus: Sample Collection
 
-Instead of taking a list of movement commands, the rover can now operate autonomously to find the nearest rock. Find the **shortest path** to the rock!
+NASA wants to send a rover to search for an interesting rock and find the **shortest path** to it.
 
 ### Requirements
-- Input: Plateau size, initial position, and rock position (x, y).
-- Output: The shortest sequence of commands (e.g., **MMLMM**) to reach the rock.
+- Only one rover is needed.
+- Instead of movement commands, the rover takes the rock's position as input, e.g. **2,2**.
+- The output is the shortest command sequence to reach the rock, e.g. **MMLMM**.
 
-### Example
-**Input:**
+### Examples
+**Input**
 Plateau size: 3,3
 Initial position: 0,0,E
 Rock: 2,2
 
-**Output:**
-MMLMM
+**Output**
+MMLMM (or MLMRMLM, etc.)
