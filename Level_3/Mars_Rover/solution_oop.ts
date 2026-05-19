@@ -91,7 +91,7 @@ function runPart1(plateauSize: string, initialPos: string, commands: string): st
 function runPart2(plateauSize: string, initialPositions: string[], commandStrings: string[]): string[] {
     const [pX, pY] = plateauSize.split(',').map(Number);
     const rovers: Rover[] = [];
-    
+
     for (const posStr of initialPositions) {
         const [x, y, dir] = posStr.split(',');
         rovers.push(new Rover(Number(x), Number(y), dir as Direction, pX, pY));
@@ -124,49 +124,58 @@ function runPart2(plateauSize: string, initialPositions: string[], commandString
 /**
  * Bonus: BFS Pathfinding
  */
+type RoverState = { x: number, y: number, direction: Direction, path: string };
 function findShortestPath(plateauSize: string, startPos: string, rockPos: string): string {
     const [pX, pY] = plateauSize.split(',').map(Number);
     const [startX, startY, startDir] = startPos.split(',');
     const [targetX, targetY] = rockPos.split(',').map(Number);
 
-    const queue: [number, number, Direction, string][] = [[Number(startX), Number(startY), startDir as Direction, ""]];
+    const queue: RoverState[] = [{ x: Number(startX), y: Number(startY), direction: startDir as Direction, path: "" }];
     const visited = new Set<string>();
     visited.add(`${startX},${startY},${startDir}`);
 
     while (queue.length > 0) {
-        const [x, y, dir, path] = queue.shift()!;
-
-        if (x === targetX && y === targetY) {
-            return path;
+        const currentState = queue.shift()!;
+        // 1. Did we win?
+        if (currentState.x === targetX && currentState.y === targetY) {
+            return currentState.path;
         }
+        // 2. Generate all 3 possible next moves using a helper function (defined below)
+        const possibleMoves = generateNextMoves(currentState, pX, pY);
+        // 3. Process the moves
+        for (const nextMove of possibleMoves) {
+            const memoryString = `${nextMove.x},${nextMove.y},${nextMove.direction}`;
 
-        // L
-        const leftDir = DIRECTIONS[(DIRECTIONS.indexOf(dir) + 3) % 4];
-        if (!visited.has(`${x},${y},${leftDir}`)) {
-            visited.add(`${x},${y},${leftDir}`);
-            queue.push([x, y, leftDir, path + "L"]);
-        }
-
-        // R
-        const rightDir = DIRECTIONS[(DIRECTIONS.indexOf(dir) + 1) % 4];
-        if (!visited.has(`${x},${y},${rightDir}`)) {
-            visited.add(`${x},${y},${rightDir}`);
-            queue.push([x, y, rightDir, path + "R"]);
-        }
-
-        // M
-        const [dx, dy] = MOVES[dir];
-        const nx = x + dx;
-        const ny = y + dy;
-        if (nx >= 0 && nx < pX && ny >= 0 && ny < pY) {
-            if (!visited.has(`${nx},${ny},${dir}`)) {
-                visited.add(`${nx},${ny},${dir}`);
-                queue.push([nx, ny, dir, path + "M"]);
+            // If we haven't seen this exact state before, save it and add it to the queue
+            if (!visited.has(memoryString)) {
+                visited.add(memoryString);
+                queue.push(nextMove);
             }
         }
     }
 
     return "NO PATH";
+}
+// --- HELPER FUNCTION ---
+// This hides all the messy math so your main loop stays clean!
+function generateNextMoves(state: RoverState, maxX: number, maxY: number): RoverState[] {
+    const moves: RoverState[] = [];
+
+    // Option 1: Turn Left
+    const leftDir = DIRECTIONS[(DIRECTIONS.indexOf(state.direction) + 3) % 4];
+    moves.push({ ...state, direction: leftDir, path: state.path + "L" });
+    // Option 2: Turn Right
+    const rightDir = DIRECTIONS[(DIRECTIONS.indexOf(state.direction) + 1) % 4];
+    moves.push({ ...state, direction: rightDir, path: state.path + "R" });
+    // Option 3: Move Forward (Only add if it doesn't fall off the edge)
+    const [dx, dy] = MOVES[state.direction];
+    const newX = state.x + dx;
+    const newY = state.y + dy;
+
+    if (newX >= 0 && newX <= maxX && newY >= 0 && newY <= maxY) {
+        moves.push({ x: newX, y: newY, direction: state.direction, path: state.path + "M" });
+    }
+    return moves;
 }
 
 // --- Test Suite ---
@@ -182,3 +191,4 @@ assert(runPart1("3,3", "0,0,E", "MMLMM"), "2,2,N", "Part 1: Free movement");
 assert(runPart2("3,3", ["0,0,E", "2,2,W"], ["MMLM", "MMLMM"]), ["2,1,N", "0,0,S"], "Part 2: Free movement");
 const path = findShortestPath("3,3", "0,0,E", "2,2");
 assert(runPart1("3,3", "0,0,E", path).startsWith("2,2"), true, `Bonus: Path ${path} reaches target`);
+
