@@ -27,10 +27,19 @@ class Rover {
         const index = DIRECTIONS.indexOf(this.roverState.direction);
         this.roverState.direction = DIRECTIONS[(index + 1) % DIRECTIONS.length];
     }
-    move() {
+    move(rovers?: Rover[]) {
         const [dx, dy] = MOVES[this.roverState.direction];
-        this.roverState.x = this.roverState.x + dx;
-        this.roverState.y = this.roverState.y + dy;
+        const newX = this.roverState.x + dx;
+        const newY = this.roverState.y + dy;
+        const isCollideWithOthers = rovers?.some(r => r.roverState.x === newX && r.roverState.y === newY)
+        if (isCollideWithOthers) {
+            console.log("COLLISION DETECTED", this.roverState.x, this.roverState.y, this.roverState.direction, rovers?.find(r => r.roverState.x === newX && r.roverState.y === newY)?.toString())
+            return;
+        }
+        if (newX > 0 && newX < this.plateauSizeX && newY > 0 && newY < this.plateauSizeY) {
+            this.roverState.x = this.roverState.x + dx;
+            this.roverState.y = this.roverState.y + dy;
+        }
     }
     toString() {
         return `${this.roverState.x},${this.roverState.y},${this.roverState.direction}`;
@@ -64,7 +73,7 @@ function moveRovers(initialPositions: string[], commands: string[], plateauSize:
             const cmd = commands[i][step] as Command;
             if (cmd === 'L') rovers[i].turnLeft();
             if (cmd === 'R') rovers[i].turnRight();
-            if (cmd === 'M') rovers[i].move();
+            if (cmd === 'M') rovers[i].move(rovers.filter(x => x !== rovers[i]));
         }
     }
     return rovers.map(r => r.toString());
@@ -82,4 +91,5 @@ function assert(actual: any, predict: any, remark: string) {
 }
 
 assert(moveRover("1,1,N", "MLRMMR", "5,5"), "1,4,E", "SINGLE ROVER")
-assert(moveRovers(["1,1,N", "1,2,E"], ["MLRMMR", "MMR"], "5,5"), ["1,4,E", "3,2,S"], "MULTIPLE ROVERS")
+assert(moveRovers(["1,1,N", "2,2,W"], ["MLRMMR", "MMR"], "5,5"), ["1,4,E", "4,2,S"], "MULTIPLE ROVERS")
+

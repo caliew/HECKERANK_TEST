@@ -4,17 +4,20 @@
  * Logic: dp[i] stores the number of ways to make sum i.
  */
 function countWays(coins, sum) {
-    let dp = new Array(sum + 1).fill(0);
-    dp[0] = 1;
+    // ways[i] = number of combinations to make amount i
+    const ways = new Array(sum + 1).fill(0);
+    ways[0] = 1; // Base case: one way to make sum 0 (use no coins)
 
-    for (let coin of coins) {
-        for (let i = coin; i <= sum; i++) {
-            dp[i] += dp[i - coin];
+    for (const coin of coins) {
+        // For each coin, update all amounts that can include it
+        for (let amount = coin; amount <= sum; amount++) {
+            // To make 'amount', add all combinations that make 
+            // 'amount - coin', then tack on this coin
+            ways[amount] += ways[amount - coin];
         }
     }
-    return dp[sum];
+    return ways[sum];
 }
-
 
 // --- Test Suite ---
 const testCases = [
